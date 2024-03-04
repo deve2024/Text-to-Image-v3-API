@@ -39,6 +39,19 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
+setInterval(async () => {
+    try {
+        await deleteFirebaseData();
+    } catch (error) {
+        console.error("Error deleting Firebase data:", error);
+    }
+}, 5 * 60 * 1000);
+
+async function deleteFirebaseData() {
+    const bucket = storage.bucket();
+    await bucket.deleteFiles({ prefix: 'images/' });
+}
+
 async function isValidAndroidId(androidId) {
     if (typeof androidId !== 'string') {
         return false;
@@ -50,9 +63,9 @@ async function isValidAndroidId(androidId) {
 
     for (let i = 0; i < androidId.length; i++) {
         const charCode = androidId.charCodeAt(i);
-        if (!((charCode >= 48 && charCode <= 57) || // 0-9
-            (charCode >= 65 && charCode <= 70) || // A-F
-            (charCode >= 97 && charCode <= 102))) { // a-f
+        if (!((charCode >= 48 && charCode <= 57) ||
+              (charCode >= 65 && charCode <= 70) ||
+              (charCode >= 97 && charCode <= 102))) {
             return false;
         }
     }
