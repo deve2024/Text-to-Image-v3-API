@@ -39,15 +39,42 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
+async function isValidAndroidId(androidId) {
+    if (typeof androidId !== 'string') {
+        return false;
+    }
+
+    if (androidId.length !== 16) {
+        return false;
+    }
+
+    for (let i = 0; i < androidId.length; i++) {
+        const charCode = androidId.charCodeAt(i);
+        if (!((charCode >= 48 && charCode <= 57) || // 0-9
+            (charCode >= 65 && charCode <= 70) || // A-F
+            (charCode >= 97 && charCode <= 102))) { // a-f
+            return false;
+        }
+    }
+
+    return true;
+}
+
 app.get('/prompt', async (req, res) => {
     const prompt = req.query.prompt;
     const ipAddress = req.query.ip;
+    const androidId = req.query.id;
 
-    if (!prompt || !ipAddress) {
-        return res.status(400).json({ error: 'Both prompt and IP address are required.' });
+    if (!prompt || !ipAddress || !androidId) {
+        return res.status(400).json({ error: 'Prompt, IP address, and Android ID are required.' });
     }
 
     try {
+        const isValidId = isValidAndroidId(androidId);
+        if (!isValidId) {
+            return res.status(403).json({ error: 'Invalid Android ID.' });
+        }
+
         const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
         const ipInfo = await response.json();
 
@@ -55,12 +82,12 @@ app.get('/prompt', async (req, res) => {
             return res.status(403).json({ error: 'Invalid or VPN IP address.' });
         }
 
-        let user = await User.findOne({ username: ipAddress });
+        let user = await User.findOne({ username: androidId });
         const now = Date.now();
 
         if (!user || (user.lastRequestTimestamp && (now - user.lastRequestTimestamp) >= 24 * 60 * 60 * 1000)) {
             user = await User.findOneAndUpdate(
-                { username: ipAddress },
+                { username: androidId },
                 { lastRequestTimestamp: now, requestsMade: 0, userType: 'free', premiumExpiration: null },
                 { upsert: true, new: true }
             );
@@ -87,26 +114,24 @@ app.get('/prompt', async (req, res) => {
 });
 
 app.get('/add', async (req, res) => {
-    const ipAddress = req.query.ip;
+    const androidId = req.query.id;
 
-    if (!ipAddress) {
-        return res.status(400).json({ error: 'IP address is required.' });
+    if (!androidId) {
+        return res.status(400).json({ error: 'Android ID is required.' });
     }
 
     try {
-        const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
-        const ipInfo = await response.json();
-
-        if (!ipInfo || ipInfo.proxy || ipInfo.vpn) {
-            return res.status(403).json({ error: 'Invalid or VPN IP address.' });
+        const isValidId = isValidAndroidId(androidId);
+        if (!isValidId) {
+            return res.status(403).json({ error: 'Invalid Android ID.' });
         }
 
-        let user = await User.findOne({ username: ipAddress });
+        let user = await User.findOne({ username: androidId });
 
         const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
         if (!user) {
-            user = await User.create({ username: ipAddress, lastRequestTimestamp: Date.now(), requestsMade: 0, userType: 'PAID', premiumExpiration: expirationDate });
+            user = await User.create({ username: androidId, lastRequestTimestamp: Date.now(), requestsMade: 0, userType: 'PAID', premiumExpiration: expirationDate });
         } else {
             user.userType = 'PAID';
             user.premiumExpiration = expirationDate;
