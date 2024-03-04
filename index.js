@@ -1,22 +1,21 @@
 import express from 'express';
 import fetch from 'node-fetch';
-import { promises as fsPromises } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import dotenv from 'dotenv';
-import { randomBytes } from 'crypto';
 import mongoose from 'mongoose';
 import admin from 'firebase-admin';
 import ipinfo from 'ipinfo';
+import { randomBytes } from 'crypto';
 
 const app = express();
-const firebaseConfig = {
-  credential: admin.credential.cert(JSON.parse(process.env.SERVICE_ACCOUNT_KEY)),
-  storageBucket: "codepulse-india.appspot.com"
-};
-const storage = admin.initializeApp(firebaseConfig).storage();
 
 dotenv.config();
+
+const firebaseConfig = {
+    credential: admin.credential.cert(JSON.parse(process.env.SERVICE_ACCOUNT_KEY)),
+    storageBucket: "codepulse-india.appspot.com"
+};
+
+const storage = admin.initializeApp(firebaseConfig).storage();
 
 const dbURI = process.env.MONGODB_URI;
 mongoose.connect(dbURI);
@@ -50,9 +49,8 @@ app.get('/prompt', async (req, res) => {
     }
 
     try {
-        // Use ipinfo API to get information about the IP address
-        const ipInfo = await ipinfo(ipAddress);
-        // Check if the IP address is valid and not using VPN
+        const ipInfo = await ipinfo(ipAddress, { token: process.env.IPINFO_API_KEY });
+
         if (ipInfo.bogon || ipInfo.threat.proxy || ipInfo.threat.is_proxy || ipInfo.threat.vpn) {
             return res.status(403).json({ error: 'Invalid or VPN IP address.' });
         }
@@ -96,9 +94,8 @@ app.get('/add', async (req, res) => {
     }
 
     try {
-        // Use ipinfo API to get information about the IP address
-        const ipInfo = await ipinfo(ipAddress);
-        // Check if the IP address is valid and not using VPN
+        const ipInfo = await ipinfo(ipAddress, { token: process.env.IPINFO_API_KEY });
+
         if (ipInfo.bogon || ipInfo.threat.proxy || ipInfo.threat.is_proxy || ipInfo.threat.vpn) {
             return res.status(403).json({ error: 'Invalid or VPN IP address.' });
         }
