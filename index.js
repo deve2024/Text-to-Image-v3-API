@@ -3,7 +3,6 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import admin from 'firebase-admin';
-import ipinfo from 'ipinfo';
 import { randomBytes } from 'crypto';
 
 const app = express();
@@ -49,9 +48,10 @@ app.get('/prompt', async (req, res) => {
     }
 
     try {
-        const ipInfo = await ipinfo(ipAddress, { token: process.env.IPINFO_API_KEY });
+        const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
+        const ipInfo = await response.json();
 
-        if (ipInfo.bogon || ipInfo.threat.proxy || ipInfo.threat.is_proxy || ipInfo.threat.vpn) {
+        if (!ipInfo || ipInfo.proxy || ipInfo.vpn) {
             return res.status(403).json({ error: 'Invalid or VPN IP address.' });
         }
 
@@ -94,9 +94,10 @@ app.get('/add', async (req, res) => {
     }
 
     try {
-        const ipInfo = await ipinfo(ipAddress, { token: process.env.IPINFO_API_KEY });
+        const response = await fetch(`http://ip-api.com/json/${ipAddress}`);
+        const ipInfo = await response.json();
 
-        if (ipInfo.bogon || ipInfo.threat.proxy || ipInfo.threat.is_proxy || ipInfo.threat.vpn) {
+        if (!ipInfo || ipInfo.proxy || ipInfo.vpn) {
             return res.status(403).json({ error: 'Invalid or VPN IP address.' });
         }
 
