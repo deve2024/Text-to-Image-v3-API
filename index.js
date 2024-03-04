@@ -116,12 +116,13 @@ app.get('/prompt', async (req, res) => {
 
         const imageUrl = await getProLLMResponse(prompt);
         if (imageUrl.error) {
+            console.error("Error generating LLM response:", imageUrl.error);
             return res.status(500).json({ error: imageUrl.error });
         }
 
         res.json({ code: 200, url: imageUrl });
     } catch (error) {
-        console.error(error);
+        console.error("Internal server error:", error);
         res.status(500).json({ error: 'Internal server error. Please try again later.' });
     }
 });
@@ -153,7 +154,7 @@ app.get('/add', async (req, res) => {
 
         res.json({ code: 200, message: 'Account upgraded to premium successfully.' });
     } catch (error) {
-        console.error(error);
+        console.error("Internal server error:", error);
         res.status(500).json({ error: 'Internal server error. Please try again later.' });
     }
 });
@@ -194,7 +195,18 @@ async function getProLLMResponse(prompt) {
             body: JSON.stringify(data)
         });
 
+        if (!response.ok) {
+            console.error("Failed to generate LLM response. HTTP status:", response.status);
+            return { error: 'Failed to generate LLM response. Please try again later.' };
+        }
+
         const json = await response.json();
+
+        if (!json.images || !json.images[0] || !json.images[0].imageKey) {
+            console.error("Failed to parse LLM response:", json);
+            return { error: 'Failed to parse LLM response. Please try again later.' };
+        }
+
         const imageUrl = `https://storage.googleapis.com/pai-images/${json.images[0].imageKey}.jpeg`;
 
         const imageResponse = await fetch(imageUrl);
@@ -225,6 +237,7 @@ async function getProLLMResponse(prompt) {
 
         return firebaseImageUrl;
     } catch (error) {
+        console.error("Error generating LLM response:", error);
         return { error: 'Internal server error. Please try again later.' };
     }
 }
