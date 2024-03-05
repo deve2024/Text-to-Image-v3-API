@@ -79,6 +79,8 @@ app.get('/prompt', async (req, res) => {
     const androidId = req.query.id;
 
     console.log('Prompt received:', prompt);
+    console.log('User IP:', ipAddress);
+    console.log('Android ID:', androidId);
 
     
     if (!prompt || !ipAddress || !androidId) {
