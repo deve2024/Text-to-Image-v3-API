@@ -73,16 +73,38 @@ async function isValidAndroidId(androidId) {
     return true;
 }
 
+app.get('/check/:androidId', async (req, res) => {
+    try {
+        const androidId = req.params.androidId;
+
+        
+        const isValidId = isValidAndroidId(androidId);
+        if (!isValidId) {
+            return res.status(400).json({ error: 'Invalid Android ID.' });
+        }
+
+        
+        const user = await User.findOne({ username: androidId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        
+        const userType = user.userType === 'PAID' ? 'PAID' : 'FREE';
+        res.json({ msg: userType });
+    } catch (error) {
+        console.error("Error retrieving user data:", error);
+        res.status(500).json({ error: 'Internal server error. Please try again later.' });
+    }
+});
+
+
 app.get('/prompt', async (req, res) => {
     const prompt = req.query.prompt;
     const ipAddress = req.query.ip;
     const androidId = req.query.id;
 
-    console.log('Prompt received:', prompt);
-    console.log('User IP:', ipAddress);
-    console.log('Android ID:', androidId);
-
-    
     if (!prompt || !ipAddress || !androidId) {
         return res.status(400).json({ error: 'Prompt, IP address, and Android ID are required.' });
     }
