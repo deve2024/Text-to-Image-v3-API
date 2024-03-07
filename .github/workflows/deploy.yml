@@ -13,4 +13,10 @@ jobs:
 
     steps:
     - name: Trigger Render deployment
-      run: curl -X POST https://api.render.com/deploy/srv-cniutm0l6cac739b1t30?key=$RENDER_API_KEY
+      run: |
+        set -e
+        response=$(curl -s -X POST https://api.render.com/deploy/srv-cniutm0l6cac739b1t30?key=$RENDER_API_KEY)
+        if [ $? -ne 0 ]; then
+          echo "Error deploying to Render"
+          echo "$response"
+        fi
