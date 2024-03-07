@@ -2,21 +2,17 @@ name: Deploy to Render
 
 on:
   schedule:
-    - cron: '*/1 * * * *'
+    - cron: "*/1 * * * *"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      RENDER_API_KEY: ${{ secrets.RENDER_DEPLOY_KEY }}
-
     steps:
-    - name: Trigger Render deployment
-      run: |
-        set -e
-        response=$(curl -s -X POST https://api.render.com/deploy/srv-cniutm0l6cac739b1t30?key=$RENDER_API_KEY)
-        if [ $? -ne 0 ]; then
-          echo "Error deploying to Render"
-          echo "$response"
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_DEPLOY_KEY }}
+        run: curl -X POST "https://api.render.com/deploy/srv-cnfk2q0l5elc7394pfqg?key=${RENDER_API_KEY}"
