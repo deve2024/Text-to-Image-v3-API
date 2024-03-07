@@ -39,19 +39,6 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 });
 
-setInterval(async () => {
-    try {
-        await deleteFirebaseData();
-    } catch (error) {
-        console.error("Error deleting Firebase data:", error);
-    }
-}, 5 * 60 * 1000);
-
-async function deleteFirebaseData() {
-    const bucket = storage.bucket();
-    await bucket.deleteFiles({ prefix: 'images/' });
-}
-
 async function isValidAndroidId(androidId) {
     if (typeof androidId !== 'string') {
         return false;
@@ -154,38 +141,6 @@ app.get('/prompt', async (req, res) => {
     }
 });
 
-app.get('/add', async (req, res) => {
-    const androidId = req.query.id;
-
-    if (!androidId) {
-        return res.status(400).json({ error: 'Android ID is required.' });
-    }
-
-    try {
-        const isValidId = isValidAndroidId(androidId);
-        if (!isValidId) {
-            return res.status(403).json({ error: 'Invalid Android ID.' });
-        }
-
-        let user = await User.findOne({ username: androidId });
-
-        const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-        if (!user) {
-            user = await User.create({ username: androidId, lastRequestTimestamp: Date.now(), requestsMade: 0, userType: 'PAID', premiumExpiration: expirationDate });
-        } else {
-            user.userType = 'PAID';
-            user.premiumExpiration = expirationDate;
-            await user.save();
-        }
-
-        res.json({ code: 200, message: 'Account upgraded to premium successfully.' });
-    } catch (error) {
-        console.error("Internal server error:", error);
-        res.status(500).json({ error: 'Internal server error. Please try again later.' });
-    }
-});
-
 async function getProLLMResponse(prompt) {
     try {
         const seedBytes = randomBytes(4);
@@ -236,33 +191,7 @@ async function getProLLMResponse(prompt) {
 
         const imageUrl = `https://storage.googleapis.com/pai-images/${json.images[0].imageKey}.jpeg`;
 
-        const imageResponse = await fetch(imageUrl);
-        const buffer = await imageResponse.buffer();
-
-        const bucket = storage.bucket();
-        const firebaseFileName = `images/${Date.now()}.jpeg`;
-        const file = bucket.file(firebaseFileName);
-
-        await new Promise((resolve, reject) => {
-            const stream = file.createWriteStream({
-                metadata: {
-                    contentType: 'image/jpeg'
-                }
-            });
-
-            stream.on('error', (error) => {
-                reject(error);
-            });
-            stream.on('finish', () => {
-                resolve();
-            });
-
-            stream.end(buffer);
-        });
-
-        const firebaseImageUrl = `https://storage.googleapis.com/${firebaseConfig.storageBucket}/${firebaseFileName}`;
-
-        return firebaseImageUrl;
+        return imageUrl;
     } catch (error) {
         console.error("Error generating LLM response:", error);
         return { error: 'Internal server error. Please try again later.' };
