@@ -2,7 +2,7 @@ name: Deploy to Render
 
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "*/45 * * * *"
 
 jobs:
   deploy:
@@ -15,4 +15,4 @@ jobs:
       - name: Deploy to Render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_DEPLOY_KEY }}
-        run: curl -X POST "https://api.render.com/deploy/srv-cniutm0l6cac739b1t30?key=${RENDER_API_KEY}"
+        run: curl -X POST "https://api.render.com/deploy/srv-cnkutd7109ks73d47gr0?key=${RENDER_API_KEY}"
