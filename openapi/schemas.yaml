@@ -1,0 +1,17 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        lastRequestTimestamp:
+          type: string
+          format: date-time
+        requestsMade:
+          type: integer
+        userType:
+          type: string
+        premiumExpiration:
+          type: string
+          format: date-time
