@@ -1,0 +1,79 @@
+openapi: 3.0.0
+info:
+  title: Visionary V3 API
+  description: API for Visionary V3 project hosted on Render
+  version: 1.0.0
+servers:
+  - url: https://visionary-v3-api.onrender.com
+paths:
+  /:
+    get:
+      summary: Get server status
+      responses:
+        '200':
+          description: Server is running
+  /check/{androidId}:
+    get:
+      summary: Check user by Android ID
+      parameters:
+        - in: path
+          name: androidId
+          required: true
+          schema:
+            type: string
+          description: Android ID of the user
+      responses:
+        '200':
+          description: User type retrieved successfully
+        '400':
+          description: Invalid Android ID
+        '404':
+          description: User not found
+  /prompt:
+    get:
+      summary: Get prompt response
+      parameters:
+        - in: query
+          name: prompt
+          required: true
+          schema:
+            type: string
+          description: Prompt for the response
+        - in: query
+          name: ip
+          required: true
+          schema:
+            type: string
+          description: IP address
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Android ID
+      responses:
+        '200':
+          description: Prompt response generated successfully
+        '400':
+          description: Bad request
+        '403':
+          description: Invalid Android ID or IP address
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        lastRequestTimestamp:
+          type: string
+          format: date-time
+        requestsMade:
+          type: integer
+        userType:
+          type: string
+        premiumExpiration:
+          type: string
+          format: date-time
