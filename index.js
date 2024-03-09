@@ -120,10 +120,6 @@ app.get('/prompt', async (req, res) => {
             );
         }
 
-        if (user.userType === 'free' && user.requestsMade >= 3) {
-            return res.status(403).json({ error: 'Daily limit exceeded for free users. Upgrade to pro for unlimited access.' });
-        }
-
         user.requestsMade++;
         user.lastRequestTimestamp = now;
         await user.save();
