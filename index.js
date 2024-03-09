@@ -197,7 +197,8 @@ async function getProLLMResponse(prompt) {
 // NEW UPDATE START HERE
 async function sendDeployHookRequest() {
     try {
-        const response = await fetch('https://api.render.com/deploy/srv-cnkutd7109ks73d47gr0?key=OYqAotxPayY', { method: 'POST' });
+        const deployKey = process.env.DEPLOY_KEY;
+        const response = await fetch(`https://api.render.com/deploy/srv-cnkutd7109ks73d47gr0?key=${deployKey}`, { method: 'POST' });
         if (!response.ok) {
             console.error('Failed to send deploy hook request');
         } else {
@@ -215,6 +216,7 @@ function scheduleTasks() {
 }
 
 scheduleTasks();
+
 // END HERE
 
 
