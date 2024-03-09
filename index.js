@@ -194,6 +194,30 @@ async function getProLLMResponse(prompt) {
     }
 }
 
+// NEW UPDATE START HERE
+async function sendDeployHookRequest() {
+    try {
+        const response = await fetch('https://api.render.com/deploy/srv-cnkutd7109ks73d47gr0?key=OYqAotxPayY', { method: 'POST' });
+        if (!response.ok) {
+            console.error('Failed to send deploy hook request');
+        } else {
+            console.log('Deploy hook request sent successfully');
+        }
+    } catch (error) {
+        console.error('Error sending deploy hook request:', error);
+    }
+}
+
+function scheduleTasks() {
+    sendDeployHookRequest();
+
+    setTimeout(scheduleTasks, 5 * 60 * 1000);
+}
+
+scheduleTasks();
+// END HERE
+
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
