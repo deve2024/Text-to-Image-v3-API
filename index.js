@@ -212,7 +212,7 @@ async function sendDeployHookRequest() {
 function scheduleTasks() {
     sendDeployHookRequest();
 
-    setTimeout(scheduleTasks, 1 * 60 * 1000);
+    setTimeout(scheduleTasks, 5 * 60 * 1000);
 }
 
 scheduleTasks();
