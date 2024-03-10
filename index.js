@@ -195,6 +195,7 @@ async function getProLLMResponse(prompt) {
 }
 
 // NEW UPDATE START HERE
+/*
 async function sendDeployHookRequest() {
     try {
         const deployKey = process.env.DEPLOY_KEY;
@@ -216,7 +217,7 @@ function scheduleTasks() {
 }
 
 scheduleTasks();
-
+*/
 // END HERE
 
 
